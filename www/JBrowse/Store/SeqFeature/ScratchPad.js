@@ -1,7 +1,7 @@
 define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature']
-, function(declare, SeqFeatureStore) {
+, function (declare, SeqFeatureStore) {
 
-    return declare(SeqFeatureStore, {
+    return declare (SeqFeatureStore, {
 
         constructor: function( args ) {
             this.refSeq = args.refSeq;
@@ -10,38 +10,38 @@ define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature']
             this._calculateStats();
         },
 
-        insert: function( feature ) {
-            this.features[ feature.id() ] = feature;
+        insert: function (feature) {
+            this.features[feature.id()] = feature;
             this._calculateStats();
         },
 
-        replace: function( feature ) {
-            this.features[ feature.id() ] = feature;
+        replace: function (feature) {
+            this.features[feature.id()] = feature;
             this._calculateStats();
         },
 
-        deleteFeatureById: function( id ) {
-            delete  this.features[ id ];
+        deleteFeatureById: function (id) {
+            delete  this.features[id];
             this._calculateStats();
         },
 
         /* if feature with given id is present in store, return it.  Otherwise return null */
-        getFeatureById: function( id )  {
-            return this.features[ id ];
+        getFeatureById: function (id )  {
+            return this.features[id];
         },
 
-        _calculateStats: function() {
+        _calculateStats: function () {
             var minStart = Infinity;
             var maxEnd = -Infinity;
             var featureCount = 0;
-            for( var id in this.features ) {
+            for (var id in this.features) {
                 var f = this.features[id];
                 var s = f.get('start');
                 var e = f.get('end');
                 if( s < minStart )
                     minStart = s;
 
-                if( e > maxEnd )
+                if (e > maxEnd)
                     maxEnd = e;
 
                 featureCount++;
@@ -56,7 +56,7 @@ define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature']
             };
         },
 
-        getFeatures: function( query, featCallback, endCallback, errorCallback ) {
+        getFeatures: function (query, featCallback, endCallback, errorCallback) {
             var start = query.start;
             var end = query.end;
             for( var id in this.features ) {
