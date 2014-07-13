@@ -22,7 +22,7 @@ class Importer
       names.each do |name|
         name = eval name.chomp
 
-        PredictedFeature.create({
+        Gene.create({
           name:  name[-4],
           ref:   name[-3],
           start: name[-2],
@@ -39,27 +39,27 @@ class Importer
     # [
     #   {
     #     ref: ...,
-    #     feature_ids: [],
-    #     feature_start_coordinates: [],
-    #     feature_end_coordinates: []
+    #     gene_ids: [],
+    #     gene_start_coordinates: [],
+    #     gene_end_coordinates: []
     #   },
     #   ...
     # ]
-    loci_all_ref = Feature.select(
-      Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:feature_ids),
-      Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:feature_start_coordinates),
-      Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:feature_end_coordinates),
+    loci_all_ref = Gene.select(
+      Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:gene_ids),
+      Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:gene_start_coordinates),
+      Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:gene_end_coordinates),
       :ref).group(:ref)
 
     loci_all_ref.each do |loci_one_ref|
       groups = call_overlaps loci_one_ref
       groups.each do |group|
-        feature_ids = group.delete :feature_ids
-        t = CurationTask.create group
-        feature_ids.each do |feature_id|
-          t.add_feature feature_id
+        gene_ids = group.delete :gene_ids
+        t = Task::Curation.create group
+        gene_ids.each do |gene_id|
+          t.add_gene gene_id
         end
-        t.difficulty = feature_ids.length
+        t.difficulty = gene_ids.length
         t.save
       end
     end
@@ -72,16 +72,16 @@ class Importer
     # Ref being processed.
     ref = loci_one_ref[:ref]
 
-    groups = [] # [{start: , end: , feature_ids: []}, ...]
-    loci_one_ref[:feature_ids].each_with_index do |feature_id, i|
-      start = loci_one_ref[:feature_start_coordinates][i]
-      _end = loci_one_ref[:feature_end_coordinates][i]
+    groups = [] # [{start: , end: , gene_ids: []}, ...]
+    loci_one_ref[:gene_ids].each_with_index do |gene_id, i|
+      start = loci_one_ref[:gene_start_coordinates][i]
+      _end = loci_one_ref[:gene_end_coordinates][i]
 
       if not groups.empty? and start < groups.last[:end] # overlap
-        groups.last[:feature_ids] << feature_id
+        groups.last[:gene_ids] << gene_id
         groups.last[:end] = [groups.last[:end], _end].max
       else
-        groups << {ref: ref, start: start, end: _end, feature_ids: [feature_id]}
+        groups << {ref: ref, start: start, end: _end, gene_ids: [gene_id]}
       end
     end
     groups

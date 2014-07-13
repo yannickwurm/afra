@@ -1,6 +1,5 @@
 Sequel.migration do
 
-  ### Tasks super table.
   up do
     create_table :tasks  do
 
@@ -9,7 +8,7 @@ Sequel.migration do
       String      :type,
         null:      false
       validate do
-        includes %w|CurationTask|, :type
+        includes %w|Task Task::Curation|, :type
       end
 
       String      :ref,
@@ -46,5 +45,4 @@ Sequel.migration do
     drop_constraint_validations_for table: :tasks
     drop_table :tasks
   end
-  ### /Tasks super table.
 end
