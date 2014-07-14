@@ -46,12 +46,13 @@ define(['JBrowse/Browser']
         var get = function () {
             return http.get('data/tasks/next')
             .then(function (response) {
-                return response.data;
-            })
-            .then(function (task) {
-                cookie.put('task', task);
-                return task;
+                jbrowse.task = response.data;
+                return jbrowse.task;
             });
+            //.then(function (task) {
+                //cookie.put('task', task);
+                //return task;
+            //});
         };
 
         var put = function (id, submission) {
@@ -73,10 +74,10 @@ define(['JBrowse/Browser']
         }
 
         this.done = function () {
-            var task = cookie.get('task');
-            put(task.id, jbrowse.edits())
+            //var task = cookie.get('task');
+            put(this.task.id, jbrowse.edits())
             .then(function () {
-                cookie.remove('task');
+                //cookie.remove('task');
                 $('#thanks').modal();
             });
         };
@@ -106,11 +107,11 @@ define(['JBrowse/Browser']
         }
 
         // initialize
-        q.when(cookie.get('task'))
-        .then(function (task) {
-            return task || get();
-        })
-        .then(function (task) {
+        //q.when(cookie.get('task'))
+        //.then(function (task) {
+            //return task || get();
+        //})
+        get().then(function (task) {
             jbrowse.load(task);
         });
     }];
