@@ -14,12 +14,23 @@ class Task < Sequel::Model
   end
 
   class << self
+    def distribution_dataset
+      db[:task_distribution]
+    end
+
     def give(to: nil)
       raise "Task can only be given 'to' a User" unless to.is_a? User
+
+      # First check if a task was already assigned to the user.
+      if t = distribution_dataset.where(user_id: to.id).first
+        return Task.with_pk(t[:task_id])
+      end
+
+      # Assign user a new task.
       available_tasks = where(id: to.tasks_attempted.map(&:id)).invert.where(state: 'ready').where(difficulty: 1)
       available_tasks_with_highest_priority = available_tasks.where(priority: available_tasks.max(:priority))
       task = available_tasks_with_highest_priority.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks_with_highest_priority.count)).first
-      task.set_running_state
+      task.set_running_state and task.add_to_distributed_list(to)
     end
   end
 
@@ -29,7 +40,7 @@ class Task < Sequel::Model
     #if contributions.count == 3 # and type == 'curation'
       #set_
     #else
-      increment_priority and set_ready_state and save
+      increment_priority and set_ready_state and remove_from_distributed_list(from)
     #end
   end
 
@@ -49,6 +60,20 @@ class Task < Sequel::Model
   def set_running_state
     self.state = 'running'
     self.save
+    self
+  end
+
+  def distribution_dataset
+    self.class.distribution_dataset
+  end
+
+  def add_to_distributed_list(user)
+    distribution_dataset.insert(task_id: self.id, user_id: user.id)
+    self
+  end
+
+  def remove_from_distributed_list(user)
+    distribution_dataset.where(task_id: self.id, user_id: user.id).delete
     self
   end
 
