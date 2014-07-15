@@ -7,7 +7,7 @@ class Task < Sequel::Model
 
   plugin        :class_table_inheritance,
     key:         :type,
-    table_map:   {:'Task::Curation' => :tasks_curation}
+    table_map:   {:'Task::Curation' => :tasks_curation, :'Task::Review' => :tasks_review}
 
   def tracks
     genes.first.tracks
@@ -31,6 +31,12 @@ class Task < Sequel::Model
       available_tasks_with_highest_priority = available_tasks.where(priority: available_tasks.max(:priority))
       task = available_tasks_with_highest_priority.offset(Sequel.function(:floor, Sequel.function(:random) * available_tasks_with_highest_priority.count)).first
       task.set_running_state and task.add_to_distributed_list(to)
+    end
+
+    def give_for_review(to: nil)
+      raise "Task can only be given 'to' a User" unless to.is_a? User
+      available_tasks = Review.offset(Sequel.function(:floor, Sequel.function(:random) * Review.count)).first
+      available_tasks
     end
   end
 
@@ -96,13 +102,21 @@ class Task < Sequel::Model
       File.write(".submissions/#{from.id}_#{DateTime.now}.yml", YAML.dump(submission))
       ### HACK!!
 
+      guc = nil
       super do
-        submission.each do |id, feature|
+        guc = submission.map do |id, feature|
           f = feature_detail_hash feature
           f[:from_user_id] = from.id
           f[:for_task_id]  = self.id
           Gene::UserCreated.create f
         end
+      end
+
+      # Create review task.
+      start, _end = (guc.map(&:start) + guc.map(&:end)).minmax
+      r = Review.create(start: start, end: _end, ref: guc.first.ref)
+      guc.each do |g|
+        r.add_gene g
       end
     end
 
@@ -120,5 +134,8 @@ class Task < Sequel::Model
         end,
       }
     end
+  end
+
+  class Review < self
   end
 end

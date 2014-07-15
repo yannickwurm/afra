@@ -9,7 +9,7 @@ class Assets < App::Routes
     index
   end
 
-  VIEWS = %w|about dashboard genome curate|
+  VIEWS = %w|about dashboard genome curate review|
 
   VIEWS.each do |name|
     get "/#{name}" do

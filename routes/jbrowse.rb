@@ -11,9 +11,9 @@ class JBrowse < App::Routes
   end
 
   get '/features/:query' do |query|
-    #ref, coords = query.split(':')
-    #start, _end = coords.split('..').map{|coord| Integer coord}
-    [Feature.last].to_json
-    #[{start: start, end: _end}].to_json
+    ref, coords = query.split(':')
+    start, stop = coords.split('..').map{|coord| Integer coord}
+    feature = Gene::UserCreated.all.select{|f| f.ref == ref && f.start > start && f.start < stop}
+    feature.to_json include: [:name, :seq_id, :type, :subfeatures]
   end
 end

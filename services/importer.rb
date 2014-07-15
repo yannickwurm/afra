@@ -88,7 +88,7 @@ class Importer
   end
 
   def run
-    format_for_visualization
+    #format_for_visualization
     register_for_curation
     create_curation_tasks
   end

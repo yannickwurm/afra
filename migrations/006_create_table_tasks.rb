@@ -8,7 +8,7 @@ Sequel.migration do
       String      :type,
         null:      false
       validate do
-        includes %w|Task Task::Curation|, :type
+        includes %w|Task Task::Curation Task::Review|, :type
       end
 
       String      :ref,

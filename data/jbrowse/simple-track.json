@@ -6,9 +6,12 @@
          "key" : "Simple feature",
          "type" : "FeatureTrack",
          "style" : {
-            "className" : "generic_parent",
+            "className" : "transcript",
             "subfeatureClasses" : {
-               "match_part" : "match_part"
+               "three_prime_UTR" : "three_prime_UTR",
+               "exon" : "exon",
+               "CDS" : "CDS",
+               "five_prime_UTR" : "five_prime_UTR"
             }
          }
       }

@@ -5,7 +5,11 @@ class Tasks < App::Routes
 
   get '/data/tasks/next' do
     user = AccessToken.user(request.session[:token])
-    task = Task.give to: user
+    task = if (params[:type] == 'review')
+      Task.give_for_review to: user
+    else
+      Task.give to: user
+    end
     task.to_json only: [:id, :ref, :start, :end, :tracks]
   end
 
