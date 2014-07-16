@@ -1,5 +1,5 @@
-define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature']
-, function (declare, SeqFeatureStore) {
+define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature', 'JBrowse/Model/SimpleFeature']
+, function (declare, SeqFeatureStore, SimpleFeature) {
 
     return declare (SeqFeatureStore, {
 
@@ -59,10 +59,22 @@ define(['dojo/_base/declare', 'JBrowse/Store/SeqFeature']
         getFeatures: function (query, featCallback, endCallback, errorCallback) {
             var start = query.start;
             var end = query.end;
-            for( var id in this.features ) {
-                var f = this.features[id];
-                if(! ( f.get('end') < start  || f.get('start') > end ) ) {
-                    featCallback( f );
+            if (Object.keys(this.features).length == 0) {
+                var url = '/data/task/' + this.browser.task_id + '/submissions';
+                $.getJSON(url, _.bind(function (features) {
+                    for (var i = 0; i < features.length; i++) {
+                        var feature = new SimpleFeature({id: features[i].id, data: features[i]});
+                        this.insert(feature);
+                        featCallback(feature);
+                    }
+                }, this));
+            }
+            else {
+                for (var id in this.features) {
+                    var f = this.features[id];
+                    if (! (f.get('end') < start  || f.get('start') > end)) {
+                        featCallback (f);
+                    }
                 }
             }
             if (endCallback)  { endCallback() }

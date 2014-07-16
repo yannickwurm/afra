@@ -18,7 +18,7 @@ Sequel.migration do
         null:      false,
         default:   'submitted'
       validate do
-        includes %w|submitted accepted rejected|, :status
+        includes %w|working submitted accepted rejected|, :status
       end
     end
   end

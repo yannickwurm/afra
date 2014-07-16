@@ -31,6 +31,8 @@ define(['JBrowse/Browser']
 
         this.load = function (task) {
             this.browser.showRegion(task);
+            this.browser.task_id = task.id;
+            console.log(this.browser.task_id);
         };
 
         this.edits = function () {
@@ -55,10 +57,15 @@ define(['JBrowse/Browser']
             //});
         };
 
-        var put = function (id, submission) {
+        var put = function (id, submission, only_save) {
             _.each(_.values(submission), function (f) {
                 f.set('ref', f.get('seq_id'));
             });
+
+            if (only_save) {
+                submission['only_save'] = true;
+            }
+
             var data = JSON.stringify(submission, function (key, value) {
                 if (key === '_parent' && value) {
                     return value.id();
@@ -67,11 +74,19 @@ define(['JBrowse/Browser']
                     return value;
                 }
             });
+
             return http.post('data/tasks/' + id, data).then(function (response) {
                 console.log('saved submission');
             });
             // what on failure?
         }
+
+        this.save_for_later = function () {
+            put(this.task.id, jbrowse.edits(), true)
+            .then(function () {
+                console.log('saved');
+            });
+        };
 
         this.done = function () {
             //var task = cookie.get('task');

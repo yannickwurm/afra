@@ -10,14 +10,25 @@ class Tasks < App::Routes
     else
       Task.give to: user
     end
-    task.to_json only: [:id, :ref, :start, :end, :tracks]
+    attrs = [:id, :ref, :start, :end, :tracks]
+    task.to_json only: attrs
+  end
+
+  get '/data/task/:id/submissions' do |id|
+    t = Task.with_pk(id)
+    t.submissions.to_json
   end
 
   post '/data/tasks/:id' do
     submission = JSON.parse request.body.read
     user = AccessToken.user(request.session[:token])
     task = Task.with_pk params[:id]
-    task.register_submission submission, from: user
+    puts submission
+    if submission.delete('only_save')
+      task.save_for_later submission, from: user
+    else
+      task.register_submission submission, from: user
+    end
     200
   end
 end

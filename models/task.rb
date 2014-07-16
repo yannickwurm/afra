@@ -95,6 +95,16 @@ class Task < Sequel::Model
       class:     :'Gene::UserCreated',
       key:       :for_task_id
 
+    def save_for_later(submission, from: nil)
+      raise "Submission should come 'from' a User" unless from.is_a? User
+      submission.map do |id, feature|
+        f = feature_detail_hash feature
+        f[:from_user_id] = from.id
+        f[:for_task_id]  = self.id
+        Gene::UserCreated.create f
+      end
+    end
+
     def register_submission(submission, from: nil)
       raise "Submission should come 'from' a User" unless from.is_a? User
 
