@@ -2,7 +2,7 @@ Sequel.migration do
   up do
     create_table :genes_user_created  do
 
-      foreign_key :id, :genes,
+      foreign_key :id, :features,
         primary_key: true,
         on_delete:   :cascade
 

@@ -16,6 +16,9 @@ class Importer
     system "bin/generate-names.pl -o data/jbrowse"
   end
 
+  def register_gff
+  end
+
   def register_ref_seqs
     puts "Registering reference sequences ..."
     ref_seqs_file = File.join('data', 'jbrowse', 'seq', 'refSeqs.json')
@@ -25,22 +28,19 @@ class Importer
     end
   end
 
-  def register_for_curation
-    puts "Registering features ..."
-    Dir[File.join('data', 'jbrowse', 'tracks', 'maker', '*')].each do |dir|
-      next if dir =~ /^\.+/
-      names = File.readlines File.join(dir, 'names.txt')
-      names.each do |name|
-        name = eval name.chomp
+  def register_annotations
+    puts "Registering annotations ..."
 
-        Gene.create({
-          name:  name[-4],
-          ref:   name[-3],
-          start: name[-2],
-          end:   name[-1]
-        })
+    values = []
+    Dir[File.join('data', 'jbrowse', 'tracks', '**', '*')].each do |track|
+      next if track =~ /^\.+/
+      Dir[File.join(track, '*', 'names.txt')].each do |chunk|
+        File.readlines(chunk).each do |line|
+          values << eval(line.chomp)[-5..-1]
+        end
       end
     end
+    Feature.import [:source, :name, :ref_seq_id, :start, :end], values
   end
 
   def create_curation_tasks
@@ -101,7 +101,7 @@ class Importer
   def run
     #format_for_visualization
     register_ref_seqs
-    #register_for_curation
+    register_annotations
     #create_curation_tasks
   end
 end

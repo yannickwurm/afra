@@ -1,46 +1,46 @@
-class Gene < Sequel::Model
+#class Gene < Sequel::Model
 
-  # We don't want more than one task to be associated with a gene or set of
-  # overlapping genes at any point of time.
-  many_to_one  :task
+  ## We don't want more than one task to be associated with a gene or set of
+  ## overlapping genes at any point of time.
+  #many_to_one  :task
 
-  plugin        :class_table_inheritance,
-    key:         :type,
-    table_map:   {:'Gene::UserCreated' => :genes_user_created}
+  #plugin        :class_table_inheritance,
+    #key:         :type,
+    #table_map:   {:'Gene::UserCreated' => :genes_user_created}
 
-  def ==(other)
-    v1 = self.values
-    v2 = other.values
-    [v1, v2].each{|v| v.delete :id}
-    v1 == v2
-  end
+  #def ==(other)
+    #v1 = self.values
+    #v2 = other.values
+    #[v1, v2].each{|v| v.delete :id}
+    #v1 == v2
+  #end
 
-  # When removing this gene from database, ensure overlapping genes and task
-  # associated with them is removed as well.
-  def destroy!
-    task.genes.each(&:destroy)
-    task.destroy
-    self
-  end
+  ## When removing this gene from database, ensure overlapping genes and task
+  ## associated with them is removed as well.
+  #def destroy!
+    #task.genes.each(&:destroy)
+    #task.destroy
+    #self
+  #end
 
-  class UserCreated < self
+  #class UserCreated < self
 
-    many_to_one :for_task,
-      key:   :for_task_id,
-      class: :'Task::Curation'
+    #many_to_one :for_task,
+      #key:   :for_task_id,
+      #class: :'Task::Curation'
 
-    many_to_one :from_user,
-      key:   :from_user_id,
-      class: :User
+    #many_to_one :from_user,
+      #key:   :from_user_id,
+      #class: :User
 
-    alias submitted_at created_at
+    #alias submitted_at created_at
 
-    def task_type
-      "CurationTask"
-    end
+    #def task_type
+      #"CurationTask"
+    #end
 
-    def description
-      "Curated #{for_task.ref}:#{for_task.start}..#{for_task.end}."
-    end
-  end
-end
+    #def description
+      #"Curated #{for_task.ref}:#{for_task.start}..#{for_task.end}."
+    #end
+  #end
+#end
