@@ -1,3 +1,5 @@
+require 'json'
+
 # Import annotations into the system.
 class Importer
 
@@ -12,6 +14,15 @@ class Importer
     system "bin/gff2jbrowse.pl -o data/jbrowse '#{annotations_file}'"
     puts   "Generateing index ..."
     system "bin/generate-names.pl -o data/jbrowse"
+  end
+
+  def register_ref_seqs
+    puts "Registering reference sequences ..."
+    ref_seqs_file = File.join('data', 'jbrowse', 'seq', 'refSeqs.json')
+    ref_seqs_json = JSON.load File.read ref_seqs_file
+    ref_seqs_json.each do |ref_seq|
+      RefSeq.create species: 'na', asm_id: 'na', seq_id: ref_seq['name'], length: ref_seq['length']
+    end
   end
 
   def register_for_curation
@@ -81,15 +92,16 @@ class Importer
         groups.last[:gene_ids] << gene_id
         groups.last[:end] = [groups.last[:end], _end].max
       else
-        groups << {ref: ref, start: start, end: _end, gene_ids: [gene_id]}
+        groups << {ref_seq_id: ref, start: start, end: _end, gene_ids: [gene_id]}
       end
     end
     groups
   end
 
   def run
-    format_for_visualization
-    register_for_curation
-    create_curation_tasks
+    #format_for_visualization
+    register_ref_seqs
+    #register_for_curation
+    #create_curation_tasks
   end
 end

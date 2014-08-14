@@ -11,8 +11,10 @@ Sequel.migration do
         includes %w|Task Task::Curation|, :type
       end
 
-      String      :ref,
-        null:      false
+      foreign_key :ref_seq_id, :ref_seqs,
+        type:      String,
+        null:      false,
+        on_delete: :cascade
 
       Integer     :start,
         null:      false
