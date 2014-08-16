@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    create_table :genes_user_created  do
+    create_table :features_user_created  do
 
       foreign_key :id, :features,
         primary_key: true,
@@ -24,7 +24,7 @@ Sequel.migration do
   end
 
   down do
-    drop_constraint_validations_for table: :genes_user_created
-    drop_table :genes_user_created
+    drop_constraint_validations_for table: :features_user_created
+    drop_table :features_user_created
   end
 end

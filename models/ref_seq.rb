@@ -12,6 +12,8 @@ class RefSeq < Sequel::Model
 
   unrestrict_primary_key
 
+  one_to_many :features
+
   def value
     (0..nchunks).map do |i|
       File.read File.join(store, "#{seq_id}-#{i}.txt")

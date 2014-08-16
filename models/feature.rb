@@ -4,9 +4,11 @@ class Feature < Sequel::Model
   # overlapping genes at any point of time.
   #many_to_one  :task
 
-  #plugin        :class_table_inheritance,
-    #key:         :type,
-    #table_map:   {:'Gene::UserCreated' => :genes_user_created}
+  plugin        :class_table_inheritance,
+    key:         :klass,
+    table_map:   {:'Feature::UserCreated' => :features_user_created}
+
+  many_to_one   :ref_seq
 
   def ==(other)
     v1 = self.values
@@ -23,24 +25,24 @@ class Feature < Sequel::Model
     #self
   #end
 
-  #class UserCreated < self
+  class UserCreated < self
 
-    #many_to_one :for_task,
-      #key:   :for_task_id,
-      #class: :'Task::Curation'
+    many_to_one :for_task,
+      key:   :for_task_id,
+      class: :'Task::Curation'
 
-    #many_to_one :from_user,
-      #key:   :from_user_id,
-      #class: :User
+    many_to_one :from_user,
+      key:   :from_user_id,
+      class: :User
 
-    #alias submitted_at created_at
+    alias submitted_at created_at
 
-    #def task_type
-      #"CurationTask"
-    #end
+    def task_type
+      "CurationTask"
+    end
 
-    #def description
-      #"Curated #{for_task.ref}:#{for_task.start}..#{for_task.end}."
-    #end
-  #end
+    def description
+      "Curated #{for_task.ref}:#{for_task.start}..#{for_task.end}."
+    end
+  end
 end

@@ -7,7 +7,7 @@ class User < Sequel::Model
 
   one_to_many  :gene_models_contributed,
     key:        :from_user_id,
-    class:      :'Gene::UserCreated'
+    class:      :'Feature::UserCreated'
 
   def tasks_attempted
     gene_models_contributed.map(&:for_task)

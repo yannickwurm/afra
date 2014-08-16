@@ -77,20 +77,21 @@ class Importer
     #   },
     #   ...
     # ]
-    loci_all_ref = Gene.select(
-      Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:gene_ids),
+    loci_all_ref = Feature.
+      where(type: 'mRNA').
+      select(Sequel.function(:array_agg, Sequel.lit('"id" ORDER BY "start"')).as(:gene_ids),
       Sequel.function(:array_agg, Sequel.lit('"start" ORDER BY "start"')).as(:gene_start_coordinates),
       Sequel.function(:array_agg, Sequel.lit('"end" ORDER BY "start"')).as(:gene_end_coordinates),
-      :ref).group(:ref)
+      :ref_seq_id).group(:ref_seq_id)
 
     loci_all_ref.each do |loci_one_ref|
       groups = call_overlaps loci_one_ref
       groups.each do |group|
         gene_ids = group.delete :gene_ids
         t = Task::Curation.create group
-        gene_ids.each do |gene_id|
-          t.add_gene gene_id
-        end
+        #gene_ids.each do |gene_id|
+          #t.add_gene gene_id
+        #end
         t.difficulty = gene_ids.length
         t.save
       end
@@ -102,7 +103,7 @@ class Importer
   # About overlapping genes: http://www.biomedcentral.com/1471-2164/9/169.
   def call_overlaps(loci_one_ref)
     # Ref being processed.
-    ref = loci_one_ref[:ref]
+    ref = loci_one_ref[:ref_seq_id]
 
     groups = [] # [{start: , end: , gene_ids: []}, ...]
     loci_one_ref[:gene_ids].each_with_index do |gene_id, i|
@@ -120,9 +121,9 @@ class Importer
   end
 
   def run
-    #format
-    #register_ref_seqs
+    format
+    register_ref_seqs
     register_annotations
-    #create_curation_tasks
+    create_curation_tasks
   end
 end

@@ -3,14 +3,21 @@ require 'date'
 
 class Task < Sequel::Model
 
-  one_to_many   :genes
-
   plugin        :class_table_inheritance,
     key:         :type,
     table_map:   {:'Task::Curation' => :tasks_curation}
 
+  many_to_one   :ref_seq
+
+  def ref
+    ref_seq.seq_id
+  end
+
   def tracks
-    genes.first.tracks
+    ref_seq.features_dataset.
+      where{|f| f.end > self.start}.
+      where{|f| f.start < self.end}.
+      select_map(:source).uniq
   end
 
   class << self
@@ -86,7 +93,7 @@ class Task < Sequel::Model
   class Curation < self
 
     one_to_many :submissions,
-      class:     :'Gene::UserCreated',
+      class:     :'Feature::UserCreated',
       key:       :for_task_id
 
     def register_submission(submission, from: nil)
@@ -101,7 +108,7 @@ class Task < Sequel::Model
           f = feature_detail_hash feature
           f[:from_user_id] = from.id
           f[:for_task_id]  = self.id
-          Gene::UserCreated.create f
+          Feature::UserCreated.create f
         end
       end
     end

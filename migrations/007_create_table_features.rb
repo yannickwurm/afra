@@ -4,11 +4,12 @@ Sequel.migration do
 
       primary_key :id
 
-      #String      :type,
-        #null:      false
-      #validate do
-        #includes %w|Gene Gene::UserCreated|, :type
-      #end
+      String      :klass,
+        null:      false,
+        default:   'Feature'
+      validate do
+        includes %w|Feature Feature::UserCreated|, :klass
+      end
 
       foreign_key :ref_seq_id, :ref_seqs,
         type:      String,
