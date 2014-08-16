@@ -5,42 +5,63 @@ class Importer
 
   def initialize(annotations_file)
     @annotations_file = annotations_file
+    @species, @asm_id = annotations_file.split('/')[-2..-1]
+    @asm_id.sub!(/(\.gff)$/, '')
   end
 
-  attr_reader :annotations_file
+  attr_reader :annotations_file, :species, :asm_id
 
-  def format_for_visualization
+  def store
+    File.join('data', 'jbrowse', species, asm_id)
+  end
+
+  def format
     puts   "Converting GFF to JBrowse ..."
-    system "bin/gff2jbrowse.pl -o data/jbrowse '#{annotations_file}'"
-    puts   "Generateing index ..."
-    system "bin/generate-names.pl -o data/jbrowse"
-  end
-
-  def register_gff
+    system "bin/gff2jbrowse.pl -o #{store} '#{annotations_file}'"
+    #puts   "Generateing index ..."
+    #system "bin/generate-names.pl -o data/jbrowse"
   end
 
   def register_ref_seqs
     puts "Registering reference sequences ..."
-    ref_seqs_file = File.join('data', 'jbrowse', 'seq', 'refSeqs.json')
+    ref_seqs_file = File.join(store, 'seq', 'refSeqs.json')
     ref_seqs_json = JSON.load File.read ref_seqs_file
+
+    ref_seqs = []
     ref_seqs_json.each do |ref_seq|
-      RefSeq.create species: 'na', asm_id: 'na', seq_id: ref_seq['name'], length: ref_seq['length']
+      ref_seqs << [species, asm_id, ref_seq['name'], ref_seq['length']]
     end
+    RefSeq.import [:species, :asm_id, :seq_id, :length], ref_seqs
   end
 
   def register_annotations
     puts "Registering annotations ..."
 
     values = []
-    Dir[File.join('data', 'jbrowse', 'tracks', '**', '*')].each do |track|
-      next if track =~ /^\.+/
-      Dir[File.join(track, '*', 'names.txt')].each do |chunk|
-        File.readlines(chunk).each do |line|
-          values << eval(line.chomp)[-5..-1]
-        end
+    Dir[File.join(store, 'tracks', '*')].each do |track|
+      Dir[File.join(track, '*')].each do |ref|
+        track_data = JSON.load File.read File.join(ref, 'trackData.json')
+        values.concat nclist_to_features(ref, track_data['intervals']['classes'], track_data['intervals']['nclist'])
       end
     end
-    Feature.import [:source, :name, :ref_seq_id, :start, :end], values
+    Feature.import [:start, :end, :strand, :source, :ref_seq_id, :name, :type], values
+  end
+
+  def nclist_to_features(ref, classes, nclist)
+    list = []
+    nclist.each do |e|
+      if e.first == 0
+        c = Struct.new(*classes[0]['attributes'].map(&:downcase).map(&:intern))
+        v = c.new(*e[1, c.members.length])
+        list << [v.start, v.end, v.strand, v.source, v.seq_id, v.name, v.type]
+      else
+        list.concat nclist_to_features(ref, classes, JSON.load(File.read File.join(ref, "lf-#{e[3]}.json")))
+      end
+      if e.last.is_a? Hash
+        list.concat nclist_to_features(ref, classes, e.last['Sublist'])
+      end
+    end
+    list
   end
 
   def create_curation_tasks
@@ -99,8 +120,8 @@ class Importer
   end
 
   def run
-    #format_for_visualization
-    register_ref_seqs
+    #format
+    #register_ref_seqs
     register_annotations
     #create_curation_tasks
   end

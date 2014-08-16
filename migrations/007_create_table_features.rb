@@ -20,9 +20,8 @@ Sequel.migration do
       String      :name,
         null:      false
 
-      #Integer     :version,
-        #null:      false,
-        #default:   1
+      String      :type,
+        null:      false
 
       Integer     :start,
         null:      false,
@@ -31,23 +30,15 @@ Sequel.migration do
       Integer     :end,
         null:      false
 
+      Integer     :strand,
+        null:      false
+
       column      :subfeatures, :json,
         default:   Sequel.pg_json({})
-
-      #column      :tracks, 'text[]',
-        #default:   Sequel.pg_array([
-          #'DNA', 'Edit', 'maker', 'augustus_masked',
-          #'snap_masked', 'est2genome', 'protein2genome',
-          #'blastx', 'tblastx', 'blastn', 'repeatmasker'
-        #])
 
       DateTime    :created_at,
         null:      false,
         default:   Sequel.function(:now)
-
-      #foreign_key :task_id, :tasks,
-        #null:      true,
-        #on_delete: :set_null
     end
   end
 
