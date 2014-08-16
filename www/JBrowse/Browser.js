@@ -164,24 +164,31 @@ resolveUrl: function( url ) {
     return Util.resolveUrl( browserRoot, url );
 },
 
-loadRefSeqs: function() {
-    return this._milestoneFunction( 'loadRefSeqs', function( deferred ) {
+loadRefSeqs: function () {
+    return this._milestoneFunction('loadRefSeqs', function (deferred) {
+        var browser = this;
+        var resolveRefSeqs = function (refSeqs) {
+            browser.addRefSeqs(refSeqs);
+            deferred.resolve({success: true});
+        };
+
         // load our ref seqs
-        if( typeof this.config.refSeqs == 'string' )
-            this.config.refSeqs = { url: this.config.refSeqs };
-        dojo.xhrGet(
-            {
-                url: this.config.refSeqs.url,
+        if (typeof this.config.refSeqs == 'string') {
+            dojo.xhrGet({
+                url: this.config.refSeqs,
                 handleAs: 'json',
-                load: dojo.hitch( this, function(o) {
-                    this.addRefseqs( o );
-                    deferred.resolve({success:true});
-                }),
-                error: dojo.hitch( this, function(e) {
+                load: function (refSeqs) {
+                    resolveRefSeqs(refSeqs);
+                },
+                error: function (e) {
                     console.error('Failed to load reference sequence info: ', e, e.stack);
-                    deferred.resolve({ success: false, error: e });
-                })
+                    deferred.resolve({success: false, error: e});
+                }
             });
+        }
+        else {
+            resolveRefSeqs(this.config.refSeqs);
+        }
     });
 },
 
@@ -950,11 +957,11 @@ _coerceBoolean: function(val) {
 /**
  * @param refSeqs {Array} array of refseq records to add to the browser
  */
-addRefseqs: function( refSeqs ) {
+addRefSeqs: function (refSeqs) {
     var allrefs = this.allRefs = this.allRefs || {};
-    dojo.forEach( refSeqs, function(r) {
+    dojo.forEach(refSeqs, function (r) {
         this.allRefs[r.name] = r;
-    },this);
+    }, this);
 
     // generate refSeqOrder
     this.refSeqOrder =

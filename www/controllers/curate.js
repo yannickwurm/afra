@@ -4,8 +4,9 @@ define(['JBrowse/Browser']
     var config = {
         containerID: 'genome',
         baseUrl: 'data/jbrowse/',
-        refSeqs: 'data/jbrowse/seq/refSeqs.json',
-        include: ['data/jbrowse/trackList.json', 'data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json'],
+        //refSeqs: 'data/jbrowse/seq/refSeqs.json',
+        //include: ['data/jbrowse/trackList.json', 'data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json'],
+        include: ['data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json'],
         show_nav: false,
         show_tracklist: true,
         show_overview:  false,
@@ -18,8 +19,6 @@ define(['JBrowse/Browser']
     };
 
     return ['$http', '$q', '$cookieStore', '$location', function (http, q, cookie, location) {
-        this.browser = new Browser(config);
-
         this.sidebar_visible = true;
         this.toggle_sidebar  = function () {
             this.sidebar_visible = !this.sidebar_visible;
@@ -30,6 +29,10 @@ define(['JBrowse/Browser']
         };
 
         this.load = function (task) {
+            console.log(task);
+            config.refSeqs = task.refSeqs;
+            config.include.push(task.trackList);
+            this.browser = new Browser(config);
             this.browser.showRegion(task);
         };
 
