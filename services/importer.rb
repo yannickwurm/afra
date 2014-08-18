@@ -39,12 +39,13 @@ class Importer
 
     values = []
     Dir[File.join(store, 'tracks', '*')].each do |track|
+      next if File.basename(track) == 'gene'
       Dir[File.join(track, '*')].each do |ref|
         track_data = JSON.load File.read File.join(ref, 'trackData.json')
         values.concat nclist_to_features(ref, track_data['intervals']['classes'], track_data['intervals']['nclist'])
       end
     end
-    Feature.import [:start, :end, :strand, :source, :ref_seq_id, :name, :type], values
+    Feature.import [:start, :end, :strand, :source, :ref_seq_id, :name, :type, :subfeatures], values
   end
 
   def nclist_to_features(ref, classes, nclist)
@@ -53,7 +54,12 @@ class Importer
       if e.first == 0
         c = Struct.new(*classes[0]['attributes'].map(&:downcase).map(&:intern))
         v = c.new(*e[1, c.members.length])
-        list << [v.start, v.end, v.strand, v.source, v.seq_id, v.name, v.type]
+        v.subfeatures.each_with_index do |s, i|
+          sc = Struct.new(*classes[s.first]['attributes'].map(&:downcase).map(&:intern))
+          sv = sc.new(*s[1, c.members.length])
+          v.subfeatures[i] = sv.to_h
+        end
+        list << [v.start, v.end, v.strand, v.source, v.seq_id, v.name, v.type, Sequel.pg_json(v.subfeatures)]
       else
         list.concat nclist_to_features(ref, classes, JSON.load(File.read File.join(ref, "lf-#{e[3]}.json")))
       end
