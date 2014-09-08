@@ -1,0 +1,20 @@
+{
+   "tracks" : [
+      {
+         "key"            : "BAM Si_gnH_rnaseq_tophat_accepted_hits",
+         "label"          : "BAM-Si_gnH_rnaseq_tophat_accepted_hits",
+         "type"           : "JBrowse/View/Track/Alignments2",
+         "storeClass"     : "JBrowse/Store/SeqFeature/BAM",
+         "urlTemplate"    : "tracks/BAM/Si_gnH_rnaseq_tophat_accepted_hits.bam",
+         "baiUrlTemplate" : "tracks/BAM/Si_gnH_rnaseq_tophat_accepted_hits.bam.bai"
+      },
+      {
+         "key"            : "BAM Si_gnH_rnaseq_tophat_accepted_hits-coverage",
+         "label"          : "BAM-Si_gnH_rnaseq_tophat_accepted_hits-coverage",
+         "type"           : "JBrowse/View/Track/SNPCoverage",
+         "storeClass"     : "JBrowse/Store/SeqFeature/BAM",
+         "urlTemplate"    : "tracks/BAM/Si_gnH_rnaseq_tophat_accepted_hits.bam",
+         "baiUrlTemplate" : "tracks/BAM/Si_gnH_rnaseq_tophat_accepted_hits.bam.bai"
+      }
+   ]
+}

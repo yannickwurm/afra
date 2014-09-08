@@ -5,7 +5,7 @@ define(['JBrowse/Browser']
         containerID: 'genome',
         baseUrl: 'data/jbrowse/',
         refSeqs: 'data/jbrowse/seq/refSeqs.json',
-        include: ['data/jbrowse/trackList.json', 'data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json'],
+        include: ['data/jbrowse/trackList.json', 'data/jbrowse/edit-track.json', 'data/jbrowse/simple-track.json', 'data/jbrowse/bam-track.json'],
         show_nav: false,
         show_tracklist: true,
         show_overview:  false,
@@ -46,7 +46,10 @@ define(['JBrowse/Browser']
         var get = function () {
             return http.get('data/tasks/next')
             .then(function (response) {
-                return response.data;
+                var task = response.data;
+                task.tracks.push("BAM-Si_gnH_rnaseq_tophat_accepted_hits")
+                task.tracks.push("BAM-Si_gnH_rnaseq_tophat_accepted_hits-coverage")
+                return task;
             })
             .then(function (task) {
                 cookie.put('task', task);
